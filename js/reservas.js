@@ -114,7 +114,7 @@ async function fetchAndGenerateTimeSlots() {
             horarios.forEach(time => {
                 // Obtener reservas para este horario
                 const reservasEnEsteHorario = reservasDelDia.filter(r => r.hora === time);
-                const barberosOcupados = reservasEnEsteHorario.map(r => parseInt(r.barbero_id));
+                const barberosOcupados = reservasEnEsteHorario.map(r => r.barbero);
                 
                 // Crear contenedor del horario
                 const slot = document.createElement('div');
@@ -157,7 +157,7 @@ async function fetchAndGenerateTimeSlots() {
                             <div class="booked-info">
                             <span class="barber-name">${reserva.barbero}</span>
                             <span class="client-name">${reserva.nombre}</span>
-                            <button class="whatsapp-btn" onclick="openWhatsApp('https://wa.me/591${reserva.celular}')">
+                            <button class="whatsapp-btn" onclick="openWhatsApp('${reserva.telefono}')">
                                 <i class="fab fa-whatsapp"></i> Contactar
                             </button>
                         </div>
@@ -189,7 +189,7 @@ async function fetchAndGenerateTimeSlots() {
                 slot.appendChild(reservationsContainer);
                 
                 // Botón de reserva (si hay barberos disponibles)
-                const barberosDisponibles = barberos.filter(b => !barberosOcupados.includes(b.id));
+                const barberosDisponibles = barberos.filter(b => !barberosOcupados.includes(b.nombre));
                 if (barberosDisponibles.length > 0) {
                     const reserveBtn = document.createElement('button');
                     reserveBtn.className = 'btn btn-outline';
@@ -232,7 +232,7 @@ async function openReservaModal(time, date, barberosOcupados = []) {
     if (barberosOcupados.length === 0) {
         const reservasDelDia = await getReservasDelDia(date);
         const reservasEnEsteHorario = reservasDelDia.filter(r => r.hora === time);
-        barberosOcupados = reservasEnEsteHorario.map(r => parseInt(r.barbero_id));
+        barberosOcupados = reservasEnEsteHorario.map(r => r.barbero);
     }
     
     document.getElementById('selected-time').value = time;
@@ -243,7 +243,7 @@ async function openReservaModal(time, date, barberosOcupados = []) {
     select.innerHTML = '';
     
     barberos.forEach(barbero => {
-        if (!barberosOcupados.includes(barbero.id)) {
+        if (!barberosOcupados.includes(barbero.nombre)) {
             const option = document.createElement('option');
             option.value = barbero.id;
             option.textContent = barbero.nombre;
@@ -276,7 +276,7 @@ document.getElementById('reserva-form').addEventListener('submit', async (e) => 
         fecha: document.getElementById('selected-date').value,
         hora: document.getElementById('selected-time').value,
         nombre: document.getElementById('client-name').value,
-        celular: document.getElementById('client-phone').value,
+        telefono: document.getElementById('client-phone').value,
         barbero_id: document.getElementById('barber-select').value,
         barbero: barberos.find(b => b.id == document.getElementById('barber-select').value).nombre,
         estado: "confirmado"
