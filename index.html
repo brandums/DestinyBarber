@@ -20,7 +20,7 @@
     <!-- Navbar Elegante -->
     <header class="header">
         <div class="container header-container">
-            <div class="logo" data-aos="fade-down">
+            <div class="logo" data-aos="fade-down" onclick="location.href='index.html'">
                 <img src="img/destiny_logo.png" alt="Destiny Barber Studio">
             </div>
             <nav class="navbar" data-aos="fade-down">
@@ -68,7 +68,7 @@
                     <p>Corte de pelo con tijera y máquina, acabado perfecto.</p>
                     <span class="price">Bs. 40</span>
                     <div class="service-hover">
-                        <a href="login.html" class="btn btn-outline">Reservar</a>
+                        <a href="reservas.html" class="btn btn-outline">Reservar</a>
                     </div>
                 </div>
                 <!-- Servicio 2 -->
@@ -80,7 +80,7 @@
                     <p>Afeitado con navaja y productos de primera calidad.</p>
                     <span class="price">Bs. 30</span>
                     <div class="service-hover">
-                        <a href="login.html" class="btn btn-outline">Reservar</a>
+                        <a href="reservas.html" class="btn btn-outline">Reservar</a>
                     </div>
                 </div>
                 <!-- Servicio 3 -->
@@ -92,7 +92,7 @@
                     <p>Hidratación profunda para tu cabello y barba.</p>
                     <span class="price">Bs. 60</span>
                     <div class="service-hover">
-                        <a href="login.html" class="btn btn-outline">Reservar</a>
+                        <a href="reservas.html" class="btn btn-outline">Reservar</a>
                     </div>
                 </div>
             </div>
@@ -154,8 +154,7 @@
                 <div class="footer-col">
                     <h3>Horario</h3>
                     <ul>
-                        <li>Lunes - Viernes: 9AM - 8PM</li>
-                        <li>Sábado: 10AM - 6PM</li>
+                        <li>Lunes - Sabado: 9AM - 8PM</li>
                         <li>Domingo: Cerrado</li>
                     </ul>
                 </div>
@@ -176,25 +175,13 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="js/main.js"></script>
-    
+
     <script>
-        // Inicializar animaciones
         AOS.init({
             duration: 1000,
             once: true,
             easing: 'ease-in-out',
         });
-
-        // document.addEventListener('DOMContentLoaded', () => {
-        //     const menuToggle = document.querySelector('.menu-toggle');
-        //     const navbar = document.querySelector('.navbar');
-
-        //     menuToggle.addEventListener('click', () => {
-        //         navbar.classList.toggle('active');
-        //         menuToggle.innerHTML = navbar.classList.contains('active') ? 
-        //             '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-        //     });
-        // });
     </script>
 </body>
 </html>

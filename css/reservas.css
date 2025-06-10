@@ -495,6 +495,12 @@
     cursor: pointer;
 }
 
+#barber-select:hover,
+#barber-select:focus {
+    background: rgba(255, 255, 255, 0.1);
+    color: #0a0a0a;
+}
+
 @media (max-width: 767px) {
     .time-slot {
         flex: 1 1 100%; /* 1 columna */

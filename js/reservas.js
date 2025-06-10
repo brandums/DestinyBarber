@@ -276,7 +276,6 @@ document.getElementById('reserva-form').addEventListener('submit', async (e) => 
         fecha: document.getElementById('selected-date').value,
         hora: document.getElementById('selected-time').value,
         nombre: document.getElementById('client-name').value,
-        apellido: document.getElementById('client-lastname').value,
         celular: document.getElementById('client-phone').value,
         barbero_id: document.getElementById('barber-select').value,
         barbero: barberos.find(b => b.id == document.getElementById('barber-select').value).nombre,
