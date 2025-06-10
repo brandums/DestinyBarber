@@ -176,6 +176,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/main.js"></script>
     <script>
         // Inicializar animaciones
         AOS.init({
@@ -184,16 +185,16 @@
             easing: 'ease-in-out',
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navbar = document.querySelector('.navbar');
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     const menuToggle = document.querySelector('.menu-toggle');
+        //     const navbar = document.querySelector('.navbar');
 
-            menuToggle.addEventListener('click', () => {
-                navbar.classList.toggle('active');
-                menuToggle.innerHTML = navbar.classList.contains('active') ? 
-                    '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-            });
-        });
+        //     menuToggle.addEventListener('click', () => {
+        //         navbar.classList.toggle('active');
+        //         menuToggle.innerHTML = navbar.classList.contains('active') ? 
+        //             '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+        //     });
+        // });
     </script>
 </body>
 </html>

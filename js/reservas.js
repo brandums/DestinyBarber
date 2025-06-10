@@ -1,7 +1,8 @@
 // Datos de ejemplo
 const barberos = [
     { id: 1, nombre: "Juan Pérez" },
-    { id: 2, nombre: "Carlos Rojas" }
+    { id: 2, nombre: "Carlos Rojas" },
+    { id: 3, nombre: "Abel Rosales" }
 ];
 
 const horarios = [
