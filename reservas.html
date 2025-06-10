@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservas | Destiny Barber Studio</title>
-    <!-- Fuentes y estilos -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
-
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/reservas.css">
 </head>
 <body>
-    <!-- Navbar Elegante -->
     <header class="header">
         <div class="container header-container">
             <div class="logo" data-aos="fade-down">
@@ -23,7 +20,6 @@
                 <a href="index.html#home" class="nav-link active">Inicio</a>
                 <a href="index.html#services" class="nav-link">Servicios</a>
                 <a href="index.html#barbers" class="nav-link">Barberos</a>
-                <a href="reservas.html" class="btn btn-primary">Reservar</a>
             </nav>
             <div class="menu-toggle">
                 <i class="fas fa-bars"></i>
@@ -31,43 +27,43 @@
         </div>
     </header>
 
-    <!-- Sección de Reservas -->
     <section class="reservas-section">
         <div class="container">
             <h2 class="section-title">Reserva tu Cita</h2>
             <p class="section-subtitle">Horarios disponibles para los próximos 3 días</p>
             
-            <!-- Carrusel de días -->
             <div class="swiper days-carousel">
+                <div class="swiper-pagination"></div>
+                <div class="days-navigation">
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                </div>
                 <div class="swiper-wrapper">
-                    <!-- Día 1 (Hoy) -->
                     <div class="swiper-slide day-card">
                         <h3>Hoy, <span id="today-date"></span></h3>
-                        <div class="time-slots" id="today-slots"></div>
+                        <div id="today-slots" class="day-slots-container"></div>
                     </div>
                     
-                    <!-- Días 2-4 (Mañana a pasado) -->
                     <div class="swiper-slide day-card">
                         <h3>Mañana, <span id="tomorrow-date"></span></h3>
-                        <div class="time-slots" id="tomorrow-slots"></div>
+                        <div id="tomorrow-slots" class="day-slots-container"></div>
                     </div>
                     
                     <div class="swiper-slide day-card">
                         <h3 id="day3-title"></h3>
-                        <div class="time-slots" id="day3-slots"></div>
+                        <div id="day3-slots" class="day-slots-container"></div>
                     </div>
                     
                     <div class="swiper-slide day-card">
                         <h3 id="day4-title"></h3>
-                        <div class="time-slots" id="day4-slots"></div>
+                        <div id="day4-slots" class="day-slots-container"></div>
                     </div>
                 </div>
-                <div class="swiper-pagination"></div>
+                
             </div>
         </div>
     </section>
 
-    <!-- Modal de Reserva -->
     <div class="modal" id="reserva-modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
@@ -93,9 +89,11 @@
                 
                 <div class="form-group">
                     <label>Barbero</label>
-                    <select id="barber-select" required>
-                        <!-- Opciones se llenan dinámicamente -->
-                    </select>
+                    <div class="select-wrapper">
+                        <select id="barber-select" required>
+                            <!-- Opciones se llenan dinámicamente -->
+                        </select>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-gold">Confirmar Reserva</button>
@@ -103,7 +101,6 @@
         </div>
     </div>
 
-    <!-- Footer Premium -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -138,7 +135,6 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script src="js/reservas.js"></script>
     <script src="js/main.js"></script>

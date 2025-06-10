@@ -50,6 +50,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
+    document.querySelectorAll('.navbar a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (navbar.classList.contains('active')) {
+                navbar.classList.remove('active');
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        });
+    });
+
     // ----------------------------
     // 3. HEADER CON SCROLL (Efecto de cambio)
     // ----------------------------

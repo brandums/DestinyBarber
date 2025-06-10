@@ -1,76 +1,387 @@
-/* Estilos para el carrusel y reservas */
+:root {
+    --gold: #D4AF37;
+    --black: #0a0a0a;
+    --dark-gray: #1a1a1a;
+    --light-gray: #e0e0e0;
+    --white: #ffffff;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
 .reservas-section {
-    padding: 120px 0;
+    padding: 120px 0 120px;
     background: var(--dark-gray);
+    color: var(--light-gray);
+    font-family: 'Poppins', sans-serif;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-title {
+    font-size: 2.2rem;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 1rem;
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--gold);
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #aaa;
+    text-align: center;
+    margin-bottom: 3rem;
+    font-weight: 300;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
 }
 
 .days-carousel {
     padding: 20px 0 40px;
+    position: relative;
+}
+
+.days-carousel .swiper-pagination-bullet {
+    background: var(--light-gray);
+    opacity: 0.7;
+    width: 8px;
+    height: 8px;
+    transition: var(--transition);
+}
+
+.days-carousel .swiper-pagination-bullet-active {
+    background: var(--gold);
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.swiper-wrapper {
+    align-items: stretch;
+}
+
+.swiper-slide {
+    display: flex;
+    flex-direction: column;
 }
 
 .day-card {
-    background: var(--black);
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
     border-radius: 10px;
     padding: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    min-height: 500px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    transition: var(--transition);
+}
+
+.day-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    border-color: rgba(212, 175, 55, 0.4);
 }
 
 .day-card h3 {
     font-size: 1.8rem;
     margin-bottom: 30px;
-    color: var(--gold);
+    color: var(--white);
     text-align: center;
+    font-family: 'Playfair Display', serif;
+    position: relative;
+    padding-bottom: 10px;
 }
 
-.time-slots {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+.day-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 2px;
+    background: var(--gold);
+}
+
+.day-slots-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
+    width: 100%;
 }
 
 .time-slot {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 8px;
     padding: 15px;
-    text-align: center;
-    transition: all 0.3s ease;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    flex: 1 1 calc(33.333% - 30px);
+    min-width: calc(33.333% - 30px);
+    max-width: calc(33.333% - 30px);
 }
 
-.time-slot.available:hover {
-    background: rgba(212, 175, 55, 0.1);
-    transform: translateY(-3px);
+.time-slot.available {
+    border-color: var(--gold);
 }
 
 .time-slot.booked {
-    background: rgba(255, 0, 0, 0.1);
-    border-color: rgba(255, 0, 0, 0.3);
+    border-color: #ff6b6b;
 }
 
-.time-slot .time {
-    font-weight: 600;
-    margin-bottom: 5px;
+.time-slot-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
-.time-slot .booked-info {
+.time {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--white);
+}
+
+.reservations-counter {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.reservations-carousel {
+    flex-grow: 1;
+    width: 100%;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.reservations-carousel .swiper-pagination-bullet {
+    background: var(--light-gray);
+    opacity: 0.7;
+    width: 8px;
+    height: 8px;
+    transition: var(--transition);
+}
+
+.reservations-carousel .swiper-pagination-bullet-active {
+    background: var(--gold);
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.reservation-slide {
+    height: 100%;
+    padding: 0px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.booked-info {
+    display: grid;
+    grid-template-columns: 1fr auto; /* Columna 1: contenido, Columna 2: botón */
+    grid-template-rows: auto auto; /* Dos filas */
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 6px;
+    height: 100%;
+    align-items: center;
+}
+
+.barber-name {
+    font-weight: bold;
+    color: var(--gold);
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+}
+
+.client-name {
     font-size: 0.9rem;
+    color: var(--light-gray);
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+}
+
+
+.no-reservations {
     color: #aaa;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+
+.reservations-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
     margin: 5px 0;
 }
 
-.time-slot .whatsapp-btn {
+.swiper-button-next, 
+.swiper-button-prev {
+    position: relative;
+    margin-top: 0;
+    width: 30px;
+    height: 25px;
+    background: rgba(212, 175, 55, 0.7);
+    border-radius: 50%;
+    font-weight: 600;
+    color: white;
+}
+
+.swiper-button-next::after, 
+.swiper-button-prev::after {
+    font-size: 12px;
+}
+
+.swiper-pagination {
+    margin-top: 8px;
+    position: relative;
+    bottom: auto;
+}
+
+.days-navigation {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.days-navigation > div {
+    pointer-events: all;
+    background: rgba(0, 0, 0, 0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--gold);
+    color: var(--black);
+}
+
+.btn-primary:hover {
+    background: #c9a227;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.btn-outline:hover {
+    background: var(--gold);
+    color: var(--black);
+}
+
+.whatsapp-btn {
     background: #25D366;
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    border-radius: 4px;
     font-size: 0.8rem;
     cursor: pointer;
-    margin-top: 5px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    height: fit-content;
+    align-self: center;
+    margin-left: 10px;
 }
 
-/* Modal */
+.whatsapp-btn:hover {
+    background: #128C7E;
+    transform: translateY(-2px);
+}
+
+.btn-gold {
+    background: var(--gold);
+    color: var(--black);
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-gold:hover {
+    background: #c9a227;
+    transform: translateY(-2px);
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -82,6 +393,7 @@
     z-index: 1000;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
@@ -92,6 +404,27 @@
     max-width: 500px;
     position: relative;
     border: 1px solid var(--gold);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-content h3 {
+    font-size: 1.8rem;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
 }
 
 .close-modal {
@@ -100,6 +433,13 @@
     right: 15px;
     font-size: 1.5rem;
     cursor: pointer;
+    color: var(--light-gray);
+    transition: var(--transition);
+}
+
+.close-modal:hover {
+    color: var(--gold);
+    transform: rotate(90deg);
 }
 
 .form-group {
@@ -109,25 +449,58 @@
 .form-group label {
     display: block;
     margin-bottom: 8px;
+    color: var(--light-gray);
+    font-size: 0.9rem;
 }
 
 .form-group input, 
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 12px 15px;
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--gold);
+    border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 5px;
-    color: white;
+    color: var(--white);
+    font-family: 'Poppins', sans-serif;
+    transition: var(--transition);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .time-slots {
-        grid-template-columns: 1fr;
-    }
-    
-    .day-card {
-        min-height: auto;
+.form-group input:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: '▼';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: var(--gold);
+    pointer-events: none;
+    font-size: 0.8rem;
+}
+
+#barber-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 30px;
+    cursor: pointer;
+}
+
+@media (max-width: 767px) {
+    .time-slot {
+        flex: 1 1 100%; /* 1 columna */
+        min-width: 100%;
+        max-width: 100%;
+        height: auto;
+        min-height: 180px;
     }
 }
