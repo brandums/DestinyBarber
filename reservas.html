@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas | Destiny Barber Studio</title>
+    <!-- Fuentes y estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/reservas.css">
+</head>
+<body>
+    <!-- Navbar Elegante -->
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo" data-aos="fade-down">
+                <img src="img/destiny_logo.png" alt="Destiny Barber Studio">
+            </div>
+            <nav class="navbar" data-aos="fade-down">
+                <a href="#home" class="nav-link active">Inicio</a>
+                <a href="#services" class="nav-link">Servicios</a>
+                <a href="#barbers" class="nav-link">Barberos</a>
+                <a href="reservas.html" class="btn btn-primary">Reservar</a>
+            </nav>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sección de Reservas -->
+    <section class="reservas-section">
+        <div class="container">
+            <h2 class="section-title">Reserva tu Cita</h2>
+            <p class="section-subtitle">Horarios disponibles para los próximos 3 días</p>
+            
+            <!-- Carrusel de días -->
+            <div class="swiper days-carousel">
+                <div class="swiper-wrapper">
+                    <!-- Día 1 (Hoy) -->
+                    <div class="swiper-slide day-card">
+                        <h3>Hoy, <span id="today-date"></span></h3>
+                        <div class="time-slots" id="today-slots"></div>
+                    </div>
+                    
+                    <!-- Días 2-4 (Mañana a pasado) -->
+                    <div class="swiper-slide day-card">
+                        <h3>Mañana, <span id="tomorrow-date"></span></h3>
+                        <div class="time-slots" id="tomorrow-slots"></div>
+                    </div>
+                    
+                    <div class="swiper-slide day-card">
+                        <h3 id="day3-title"></h3>
+                        <div class="time-slots" id="day3-slots"></div>
+                    </div>
+                    
+                    <div class="swiper-slide day-card">
+                        <h3 id="day4-title"></h3>
+                        <div class="time-slots" id="day4-slots"></div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Reserva -->
+    <div class="modal" id="reserva-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Reservar cita</h3>
+            <form id="reserva-form">
+                <input type="hidden" id="selected-time">
+                <input type="hidden" id="selected-date">
+                
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="client-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" id="client-lastname" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Celular</label>
+                    <input type="tel" id="client-phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Barbero</label>
+                    <select id="barber-select" required>
+                        <!-- Opciones se llenan dinámicamente -->
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-gold">Confirmar Reserva</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Premium -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="img/destiny_logo.png" alt="Destiny Barber" class="footer-logo">
+                    <p>Av. Aniceto Padilla, Edificio Alpes<br>Cochabamba, Bolivia</p>
+                    <div class="footer-social">
+                        <a href="https://www.instagram.com/destinybarber.studio/"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=61556802433530"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://wa.me/59171793309"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h3>Horario</h3>
+                    <ul>
+                        <li>Lunes - Viernes: 9AM - 8PM</li>
+                        <li>Sábado: 10AM - 6PM</li>
+                        <li>Domingo: Cerrado</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Contacto</h3>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +591 71798309</li>
+                        <li><i class="fas fa-envelope"></i> info@destinybarber.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Brandum'Soft. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script src="js/reservas.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
