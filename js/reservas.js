@@ -1,75 +1,11 @@
-// Datos de los barberos
-const barberos = [
-    { id: 1, nombre: "Juan Pérez" },
-    { id: 2, nombre: "Carlos Rojas" },
-    { id: 3, nombre: "Abel Rosales" }
-];
+// URL base de tu Google Apps Script
+const API_URL = 'https://script.google.com/macros/s/AKfycbx27HHcEslFB4n6ezY3mhGl8PjPMI1NuLH5GgM3bPGrFKozTSKHvHJ2ebXFHiumDde7/exec';
 
 // Horarios disponibles
 const horarios = [
-    "9:00", "10:00", "11:00", "12:00", 
-    "13:00", "14:00", "15:00", "16:00", "17:00"
+    "09:00", "10:00", "11:00", "12:00", 
+    "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
 ];
-
-// Fechas para los próximos 4 días (hoy + 3 días siguientes)
-const today = new Date();
-const dates = [
-    new Date(today),
-    new Date(today.setDate(today.getDate() + 1)),
-    new Date(today.setDate(today.getDate() + 1)),
-    new Date(today.setDate(today.getDate() + 1))
-];
-
-// Inicializar Swiper para días
-const daysSwiper = new Swiper('.days-carousel', {
-    slidesPerView: 1,
-    spaceBetween: 20,
-    pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-    },
-    navigation: {
-        nextEl: '.days-navigation .swiper-button-next',
-        prevEl: '.days-navigation .swiper-button-prev',
-    },
-    breakpoints: {
-        768: {
-            slidesPerView: 2,
-        },
-        1024: {
-            slidesPerView: 1,
-            spaceBetween: 0
-        }
-    }
-});
-
-// Formatear fechas
-document.getElementById('today-date').textContent = formatDate(dates[0]);
-document.getElementById('tomorrow-date').textContent = formatDate(dates[1]);
-document.getElementById('day3-title').textContent = formatDate(dates[2], true);
-document.getElementById('day4-title').textContent = formatDate(dates[3], true);
-
-// Función para obtener reservas desde SheetDB
-async function getReservasFromSheet() {
-    try {
-        const response = await fetch('https://sheetdb.io/api/v1/0714lohubsgvq');
-        if (!response.ok) throw new Error('Error al obtener reservas');
-        
-        const data = await response.json();
-        
-        // Asegurarnos de que siempre trabajamos con un array
-        if (Array.isArray(data)) {
-            return data;
-        } else if (data && typeof data === 'object') {
-            return Object.values(data);
-        } else {
-            return [];
-        }
-    } catch (error) {
-        console.error('Error obteniendo reservas:', error);
-        return [];
-    }
-}
 
 // Función para formatear fechas
 function formatDate(date, includeWeekday = false) {
@@ -86,153 +22,208 @@ function openWhatsApp(number) {
     window.open(`https://wa.me/${number}`, '_blank');
 }
 
-// Función principal para generar los horarios
-async function fetchAndGenerateTimeSlots() {
+// Función para obtener reservas desde Google Sheets
+async function getReservasFromSheet() {
     try {
-        const reservas = await getReservasFromSheet();
+        const response = await fetch(`${API_URL}?action=reservas`);
+        if (!response.ok) throw new Error('Error al obtener reservas');
         
-        if (!Array.isArray(reservas)) {
-            console.error('Las reservas no son un array:', reservas);
-            return;
-        }
-
-        const days = ['today', 'tomorrow', 'day3', 'day4'];
-        
-        days.forEach((day, index) => {
-            const container = document.getElementById(`${day}-slots`);
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            const currentDate = formatDate(dates[index]);
-            const reservasDelDia = reservas.filter(r => r.fecha === currentDate);
-            // Crear contenedor de slots para este día
-            const slotsContainer = document.createElement('div');
-            slotsContainer.className = 'day-slots-container';
-            container.appendChild(slotsContainer);
-
-            horarios.forEach(time => {
-                // Obtener reservas para este horario
-                const reservasEnEsteHorario = reservasDelDia.filter(r => r.hora === time);
-                const barberosOcupados = reservasEnEsteHorario.map(r => r.barbero);
-                
-                // Crear contenedor del horario
-                const slot = document.createElement('div');
-                slot.className = 'time-slot';
-                
-                // Contenedor superior (hora y contador)
-                const topContainer = document.createElement('div');
-                topContainer.className = 'time-slot-top';
-                
-                // Mostrar hora
-                const timeElement = document.createElement('div');
-                timeElement.className = 'time';
-                timeElement.textContent = time;
-                topContainer.appendChild(timeElement);
-                
-                // Mostrar contador de reservas si hay
-                if (reservasEnEsteHorario.length > 0) {
-                    const counter = document.createElement('div');
-                    counter.className = 'reservations-counter';
-                    counter.textContent = `${reservasEnEsteHorario.length}/${barberos.length}`;
-                    topContainer.appendChild(counter);
-                }
-                
-                slot.appendChild(topContainer);
-                
-                // Contenedor para el carrusel de reservas
-                const reservationsContainer = document.createElement('div');
-                reservationsContainer.className = 'reservations-carousel swiper';
-                
-                const swiperWrapper = document.createElement('div');
-                swiperWrapper.className = 'swiper-wrapper';
-                
-                // Mostrar reservas existentes en carrusel
-                if (reservasEnEsteHorario.length > 0) {
-                    reservasEnEsteHorario.forEach(reserva => {
-                        const slide = document.createElement('div');
-                        slide.className = 'reservation-slide swiper-slide';
-                        
-                        slide.innerHTML = `
-                            <div class="booked-info">
-                            <span class="barber-name">${reserva.barbero}</span>
-                            <span class="client-name">${reserva.nombre}</span>
-                            <button class="whatsapp-btn" onclick="openWhatsApp('${reserva.telefono}')">
-                                <i class="fab fa-whatsapp"></i> Contactar
-                            </button>
-                        </div>
-                        `;
-                        swiperWrapper.appendChild(slide);
-                    });
-                } else {
-                    // Mostrar mensaje si no hay reservas
-                    const slide = document.createElement('div');
-                    slide.className = 'reservation-slide swiper-slide';
-                    slide.innerHTML = '<div class="no-reservations">No hay reservas</div>';
-                    swiperWrapper.appendChild(slide);
-                }
-                
-                reservationsContainer.appendChild(swiperWrapper);
-                
-                // Añadir navegación si hay más de 1 reserva
-                if (reservasEnEsteHorario.length > 1) {
-                    const navigation = document.createElement('div');
-                    navigation.className = 'reservations-navigation';
-                    navigation.innerHTML = `
-                        <div class="swiper-button-prev"></div>
-                        <div class="swiper-pagination"></div>
-                        <div class="swiper-button-next"></div>
-                    `;
-                    reservationsContainer.appendChild(navigation);
-                }
-                
-                slot.appendChild(reservationsContainer);
-                
-                // Botón de reserva (si hay barberos disponibles)
-                const barberosDisponibles = barberos.filter(b => !barberosOcupados.includes(b.nombre));
-                if (barberosDisponibles.length > 0) {
-                    const reserveBtn = document.createElement('button');
-                    reserveBtn.className = 'btn btn-outline';
-                    reserveBtn.textContent = 'Reservar';
-                    reserveBtn.onclick = () => openReservaModal(time, currentDate, barberosOcupados);
-                    slot.appendChild(reserveBtn);
-                    slot.classList.add('available');
-                } else {
-                    slot.classList.add('booked');
-                }
-                
-                slotsContainer.appendChild(slot);
-                
-                // Inicializar carrusel de reservas
-                if (reservasEnEsteHorario.length > 0) {
-                    new Swiper(reservationsContainer, {
-                        slidesPerView: 1,
-                        spaceBetween: 5,
-                        pagination: {
-                            el: reservationsContainer.querySelector('.swiper-pagination'),
-                            clickable: true,
-                        },
-                        navigation: {
-                            nextEl: reservationsContainer.querySelector('.swiper-button-next'),
-                            prevEl: reservationsContainer.querySelector('.swiper-button-prev'),
-                        },
-                        autoHeight: true,
-                    });
-                }
-            });
-        });
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
     } catch (error) {
-        console.error('Error en fetchAndGenerateTimeSlots:', error);
+        console.error('Error obteniendo reservas:', error);
+        return [];
     }
 }
 
+// Función para obtener barberos activos desde Google Sheets
+async function getBarberosActivos() {
+    try {
+        const response = await fetch(`${API_URL}?action=barberos`);
+        if (!response.ok) throw new Error('Error al obtener barberos');
+        
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error obteniendo barberos:', error);
+        return [];
+    }
+}
+
+// Función para generar los días en la fila
+async function generateDaysRow() {
+    const daysRow = document.querySelector('.days-row');
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    
+    daysRow.innerHTML = '';
+    
+    // Generar 6 días (hoy + 5 siguientes)
+    for (let i = 0; i < 6; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        
+        const dayCard = document.createElement('div');
+        dayCard.className = 'day-card';
+        if (i === 0) dayCard.classList.add('active');
+        
+        dayCard.innerHTML = `
+            <div class="day-name">${i === 0 ? 'Hoy' : dayNames[date.getDay()]}</div>
+            <div class="day-number">${date.getDate()}</div>
+        `;
+        
+        dayCard.addEventListener('click', () => {
+            document.querySelectorAll('.day-card').forEach(card => card.classList.remove('active'));
+            dayCard.classList.add('active');
+            updateDayContent(date, i);
+        });
+        
+        daysRow.appendChild(dayCard);
+    }
+    
+    // Mostrar contenido del primer día (hoy) por defecto
+    updateDayContent(new Date(), 0);
+}
+
+// Función para actualizar el contenido del día seleccionado
+async function updateDayContent(date, dayIndex) {
+    const dayContentContainer = document.querySelector('.day-content-container');
+    const formattedDate = formatDate(date);
+    
+    dayContentContainer.innerHTML = `
+        <h3 class="day-content-title">${dayIndex === 0 ? 'Hoy' : dayIndex === 1 ? 'Mañana' : ''}, ${formattedDate}</h3>
+        <div class="day-slots-container" id="day-${dayIndex}-slots"></div>
+    `;
+    
+    await generateTimeSlotsForDay(date, dayIndex);
+}
+
+// Función para generar los slots de tiempo para un día específico
+async function generateTimeSlotsForDay(date, dayIndex) {
+    const container = document.getElementById(`day-${dayIndex}-slots`);
+    if (!container) return;
+    
+    const currentDate = formatDate(date);
+    const [reservas, barberos] = await Promise.all([
+        getReservasFromSheet(),
+        getBarberosActivos()
+    ]);
+    
+    const reservasDelDia = Array.isArray(reservas) ? reservas.filter(r => r.fecha === currentDate) : [];
+    
+    container.innerHTML = '';
+    
+    horarios.forEach(time => {
+        const reservasEnEsteHorario = reservasDelDia.filter(r => r.hora === time);
+        const barberosOcupados = reservasEnEsteHorario.map(r => r.barbero);
+        
+        const slot = document.createElement('div');
+        slot.className = 'time-slot';
+        
+        const topContainer = document.createElement('div');
+        topContainer.className = 'time-slot-top';
+        
+        const timeElement = document.createElement('div');
+        timeElement.className = 'time';
+        timeElement.textContent = time;
+        topContainer.appendChild(timeElement);
+        
+        if (reservasEnEsteHorario.length > 0) {
+            const counter = document.createElement('div');
+            counter.className = 'reservations-counter';
+            counter.textContent = `${reservasEnEsteHorario.length}/${barberos.length}`;
+            topContainer.appendChild(counter);
+        }
+        
+        slot.appendChild(topContainer);
+        
+        const reservationsContainer = document.createElement('div');
+        reservationsContainer.className = 'reservations-carousel swiper';
+        
+        const swiperWrapper = document.createElement('div');
+        swiperWrapper.className = 'swiper-wrapper';
+        
+        if (reservasEnEsteHorario.length > 0) {
+            reservasEnEsteHorario.forEach(reserva => {
+                const slide = document.createElement('div');
+                slide.className = 'reservation-slide swiper-slide';
+                
+                slide.innerHTML = `
+                    <div class="booked-info">
+                        <span class="barber-name">${reserva.barbero}</span>
+                        <span class="client-name">${reserva.nombre}</span>
+                        <button class="whatsapp-btn" onclick="openWhatsApp('${reserva.telefono}')">
+                            <i class="fab fa-whatsapp"></i> Contactar
+                        </button>
+                    </div>
+                `;
+                swiperWrapper.appendChild(slide);
+            });
+        } else {
+            const slide = document.createElement('div');
+            slide.className = 'reservation-slide swiper-slide';
+            slide.innerHTML = '<div class="no-reservations">No hay reservas</div>';
+            swiperWrapper.appendChild(slide);
+        }
+        
+        reservationsContainer.appendChild(swiperWrapper);
+        
+        if (reservasEnEsteHorario.length > 1) {
+            const navigation = document.createElement('div');
+            navigation.className = 'reservations-navigation';
+            navigation.innerHTML = `
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+            `;
+            reservationsContainer.appendChild(navigation);
+        }
+        
+        slot.appendChild(reservationsContainer);
+        
+        const barberosDisponibles = barberos.filter(b => !barberosOcupados.includes(b.nombre));
+        if (barberosDisponibles.length > 0) {
+            const reserveBtn = document.createElement('button');
+            reserveBtn.className = 'btn btn-outline';
+            reserveBtn.textContent = 'Reservar';
+            reserveBtn.onclick = () => openReservaModal(time, currentDate, barberosOcupados, barberos);
+            slot.appendChild(reserveBtn);
+            slot.classList.add('available');
+        } else {
+            slot.classList.add('booked');
+        }
+        
+        container.appendChild(slot);
+        
+        if (reservasEnEsteHorario.length > 0) {
+            new Swiper(reservationsContainer, {
+                slidesPerView: 1,
+                spaceBetween: 5,
+                pagination: {
+                    el: reservationsContainer.querySelector('.swiper-pagination'),
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: reservationsContainer.querySelector('.swiper-button-next'),
+                    prevEl: reservationsContainer.querySelector('.swiper-button-prev'),
+                },
+                autoHeight: true,
+            });
+        }
+    });
+}
+
 // Función para abrir modal de reserva
-async function openReservaModal(time, date, barberosOcupados = []) {
+async function openReservaModal(time, date, barberosOcupados = [], barberos) {
     // Si no se proporcionan barberos ocupados, los obtenemos
     if (barberosOcupados.length === 0) {
         const reservasDelDia = await getReservasDelDia(date);
         const reservasEnEsteHorario = reservasDelDia.filter(r => r.hora === time);
         barberosOcupados = reservasEnEsteHorario.map(r => r.barbero);
+    }
+    
+    // Si no tenemos los barberos, los obtenemos
+    if (!barberos) {
+        barberos = await getBarberosActivos();
     }
     
     document.getElementById('selected-time').value = time;
@@ -245,7 +236,7 @@ async function openReservaModal(time, date, barberosOcupados = []) {
     barberos.forEach(barbero => {
         if (!barberosOcupados.includes(barbero.nombre)) {
             const option = document.createElement('option');
-            option.value = barbero.id;
+            option.value = barbero.id || barbero.nombre; // Usar ID o nombre si no hay ID
             option.textContent = barbero.nombre;
             select.appendChild(option);
         }
@@ -268,35 +259,79 @@ async function getReservasDelDia(fecha) {
     return reservas.filter(r => r.fecha === fecha);
 }
 
-// Guardar reserva en SheetDB
+// Guardar reserva en Google Sheets
 document.getElementById('reserva-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const barberoSelect = document.getElementById('barber-select');
+    const barberoNombre = barberoSelect.options[barberoSelect.selectedIndex].text;
     
     const reserva = {
         fecha: document.getElementById('selected-date').value,
         hora: document.getElementById('selected-time').value,
         nombre: document.getElementById('client-name').value,
         telefono: document.getElementById('client-phone').value,
-        barbero_id: document.getElementById('barber-select').value,
-        barbero: barberos.find(b => b.id == document.getElementById('barber-select').value).nombre,
-        estado: "confirmado"
+        barbero: barberoNombre
     };
+
+    const reservasList = await getReservasFromSheet();
+    
+    // Verificar solo reservas futuras o de hoy
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Normalizar a inicio del día
+    
+    const tieneReservaActiva = reservasList.some(r => {
+        if (r.telefono === reserva.telefono) {
+            // Convertir fecha de reserva a objeto Date
+            const partesFecha = r.fecha.split(' de ');
+            const meses = {
+                'enero': 0, 'febrero': 1, 'marzo': 2, 'abril': 3, 'mayo': 4, 'junio': 5,
+                'julio': 6, 'agosto': 7, 'septiembre': 8, 'octubre': 9, 'noviembre': 10, 'diciembre': 11
+            };
+            
+            const dia = parseInt(partesFecha[0]);
+            const mes = meses[partesFecha[1].toLowerCase()];
+            const año = hoy.getFullYear(); // Asumimos año actual
+            
+            const fechaReserva = new Date(año, mes, dia);
+            
+            // Comparar con la fecha actual (solo día, sin hora)
+            return fechaReserva >= hoy;
+        }
+        return false;
+    });
+
+    if(tieneReservaActiva) {
+        alert('¡Ya tienes una reserva activa para hoy o días futuros!');
+        document.getElementById('reserva-modal').style.display = 'none';
+        return;
+    }
     
     try {
-        const response = await fetch('https://sheetdb.io/api/v1/0714lohubsgvq', {
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ data: [reserva] })
+            body: JSON.stringify(reserva)
         });
         
         if (response.ok) {
-            alert('¡Reserva confirmada!');
-            document.getElementById('reserva-modal').style.display = 'none';
-            await fetchAndGenerateTimeSlots();
+            const result = await response.json();
+            if (result.ok) {
+                alert('¡Reserva confirmada!');
+                document.getElementById('reserva-modal').style.display = 'none';
+                // Actualizar la vista con los nuevos datos
+                const activeDay = document.querySelector('.day-card.active');
+                const dayIndex = Array.from(document.querySelectorAll('.day-card')).indexOf(activeDay);
+                const date = new Date();
+                date.setDate(date.getDate() + dayIndex);
+                await updateDayContent(date, dayIndex);
+            } else {
+                throw new Error(result.error || 'Error al guardar la reserva');
+            }
         } else {
-            throw new Error('Error al guardar');
+            throw new Error('Error en la respuesta del servidor');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -310,6 +345,6 @@ document.querySelector('.close-modal').addEventListener('click', () => {
 });
 
 // Inicializar
-document.addEventListener('DOMContentLoaded', async () => {
-    await fetchAndGenerateTimeSlots();
+document.addEventListener('DOMContentLoaded', () => {
+    generateDaysRow();
 });
