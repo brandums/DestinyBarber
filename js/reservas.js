@@ -1,5 +1,5 @@
 // URL base de tu Google Apps Script
-const API_URL = 'https://script.google.com/macros/s/AKfycbxOeidV_Y_LQsziRr8BctsOldKMLhcPJtPszacGCQ8tA8_l0wYadeKTeznb9faPh2e8/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyoJkCw2y_5y8KpWrxO9cID2qy4VLy82ttlefHaApLX_JbMXKlZqu91eOjlyaGJIeOl/exec';
 
 // Variables globales para almacenar los datos
 let globalReservas = [];
@@ -288,34 +288,34 @@ document.getElementById('reserva-form').addEventListener('submit', async (e) => 
     }
     
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(reserva)
+        const formData = new URLSearchParams();
+        formData.append("nombre", reserva.nombre);
+        formData.append("telefono", reserva.telefono);
+        formData.append("barbero", reserva.barbero);
+        formData.append("fecha", reserva.fecha);
+        formData.append("hora", reserva.hora);
+
+        await fetch(API_URL, {
+        method: 'POST',
+        body: formData
         });
+
         
-        if (response.ok) {
-            const result = await response.json();
-            if (result.ok) {
-                alert('¡Reserva confirmada!');
-                document.getElementById('reserva-modal').style.display = 'none';
-                
-                // Actualizar los datos globales después de una nueva reserva
-                await loadAllData();
-                
-                // Actualizar la vista con los nuevos datos
-                const activeDay = document.querySelector('.day-card.active');
-                const dayIndex = Array.from(document.querySelectorAll('.day-card')).indexOf(activeDay);
-                const date = new Date();
-                date.setDate(date.getDate() + dayIndex);
-                updateDayContent(date, dayIndex);
-            } else {
-                throw new Error(result.error || 'Error al guardar la reserva');
-            }
+        const result = await response.json();
+
+        if (result.ok) {
+            alert('¡Reserva confirmada!');
+            document.getElementById('reserva-modal').style.display = 'none';
+
+            await loadAllData(); // Actualiza los datos
+
+            const activeDay = document.querySelector('.day-card.active');
+            const dayIndex = Array.from(document.querySelectorAll('.day-card')).indexOf(activeDay);
+            const date = new Date();
+            date.setDate(date.getDate() + dayIndex);
+            updateDayContent(date, dayIndex);
         } else {
-            throw new Error('Error en la respuesta del servidor');
+            alert('Error al guardar la reserva: ' + (result.error || 'Inténtalo nuevamente.'));
         }
     } catch (error) {
         console.error('Error:', error);
