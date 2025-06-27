@@ -1,5 +1,5 @@
 // URL base de tu Google Apps Script
-const API_URL = 'https://script.google.com/macros/s/AKfycbyoJkCw2y_5y8KpWrxO9cID2qy4VLy82ttlefHaApLX_JbMXKlZqu91eOjlyaGJIeOl/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzXKnUg79Q3ohqqNHuIqfOEtmEZAxNkm4d3qrIV0yf1NQrVm6zbblYh0wq1G29gEQvC/exec';
 
 // Variables globales para almacenar los datos
 let globalReservas = [];
@@ -29,6 +29,8 @@ function openWhatsApp(number) {
 
 // Función para cargar todos los datos al iniciar
 async function loadAllData() {
+    showLoader("Cargando reservas..."); // Mensaje específico para carga inicial
+    
     try {
         const response = await fetch(`${API_URL}?action=getAllData`);
         if (!response.ok) throw new Error('Error al obtener datos');
@@ -38,46 +40,78 @@ async function loadAllData() {
         globalBarberos = Array.isArray(data.barberos) ? data.barberos : [];
         isDataLoaded = true;
         
-        // Inicializar la UI una vez que los datos están cargados
         generateDaysRow();
     } catch (error) {
         console.error('Error cargando datos:', error);
         // Mostrar algún mensaje de error al usuario
+    } finally {
+        hideLoader();
     }
 }
 
+function showLoader(message) {
+    const loader = document.getElementById('loader-overlay');
+    const loaderMessage = document.getElementById('loader-message');
+    loaderMessage.textContent = message;
+    loader.style.display = 'flex';
+}
+
+// Función para ocultar el loader
+function hideLoader() {
+    const loader = document.getElementById('loader-overlay');
+    loader.style.display = 'none';
+}
+
+
 // Función para generar los días en la fila
+// Función para generar los días en la fila (excluyendo domingos)
 function generateDaysRow() {
     const daysRow = document.querySelector('.days-row');
-    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     
     daysRow.innerHTML = '';
     
-    // Generar 6 días (hoy + 5 siguientes)
-    for (let i = 0; i < 6; i++) {
+    let daysAdded = 0;
+    let daysToCheck = 0;
+    
+    // Generar 6 días laborables (excluyendo domingos)
+    while (daysAdded < 6) {
         const date = new Date();
-        date.setDate(date.getDate() + i);
+        date.setDate(date.getDate() + daysToCheck);
+        daysToCheck++;
+        
+        // Saltar domingos (día 0)
+        if (date.getDay() === 0) continue;
         
         const dayCard = document.createElement('div');
         dayCard.className = 'day-card';
-        if (i === 0) dayCard.classList.add('active');
+        if (daysAdded === 0) dayCard.classList.add('active');
         
         dayCard.innerHTML = `
-            <div class="day-name">${i === 0 ? 'Hoy' : dayNames[date.getDay()]}</div>
+            <div class="day-name">${daysAdded === 0 ? 'Hoy' : dayNames[date.getDay()]}</div>
             <div class="day-number">${date.getDate()}</div>
         `;
         
         dayCard.addEventListener('click', () => {
             document.querySelectorAll('.day-card').forEach(card => card.classList.remove('active'));
             dayCard.classList.add('active');
-            updateDayContent(date, i);
+            updateDayContent(date, daysAdded);
         });
         
         daysRow.appendChild(dayCard);
+        daysAdded++;
     }
     
     // Mostrar contenido del primer día (hoy) por defecto
-    updateDayContent(new Date(), 0);
+    const today = new Date();
+    // Si hoy es domingo, empezar desde el lunes
+    if (today.getDay() !== 0) {
+        updateDayContent(today, 0);
+    } else {
+        const monday = new Date();
+        monday.setDate(monday.getDate() + 1);
+        updateDayContent(monday, 0);
+    }
 }
 
 // Función para actualizar el contenido del día seleccionado
@@ -87,8 +121,12 @@ function updateDayContent(date, dayIndex) {
     const dayContentContainer = document.querySelector('.day-content-container');
     const formattedDate = formatDate(date);
     
+    // Nombres de los días de la semana
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayName = dayNames[date.getDay()];
+    
     dayContentContainer.innerHTML = `
-        <h3 class="day-content-title">${dayIndex === 0 ? 'Hoy' : dayIndex === 1 ? 'Mañana' : ''}, ${formattedDate}</h3>
+        <h3 class="day-content-title">${dayIndex === 0 ? 'Hoy' : dayName}, ${formattedDate}</h3>
         <div class="day-slots-container" id="day-${dayIndex}-slots"></div>
     `;
     
@@ -245,69 +283,60 @@ function getReservasDelDia(fecha) {
 document.getElementById('reserva-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const barberoSelect = document.getElementById('barber-select');
-    const barberoNombre = barberoSelect.options[barberoSelect.selectedIndex].text;
-    
-    const reserva = {
-        fecha: document.getElementById('selected-date').value,
-        hora: document.getElementById('selected-time').value,
-        nombre: document.getElementById('client-name').value,
-        telefono: document.getElementById('client-phone').value,
-        barbero: barberoNombre
-    };
-    
-    // Verificar solo reservas futuras o de hoy
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); // Normalizar a inicio del día
-    
-    const tieneReservaActiva = globalReservas.some(r => {
-        if (r.telefono === reserva.telefono) {
-            // Convertir fecha de reserva a objeto Date
-            const partesFecha = r.fecha.split(' de ');
-            const meses = {
-                'enero': 0, 'febrero': 1, 'marzo': 2, 'abril': 3, 'mayo': 4, 'junio': 5,
-                'julio': 6, 'agosto': 7, 'septiembre': 8, 'octubre': 9, 'noviembre': 10, 'diciembre': 11
-            };
-            
-            const dia = parseInt(partesFecha[0]);
-            const mes = meses[partesFecha[1].toLowerCase()];
-            const año = hoy.getFullYear(); // Asumimos año actual
-            
-            const fechaReserva = new Date(año, mes, dia);
-            
-            // Comparar con la fecha actual (solo día, sin hora)
-            return fechaReserva >= hoy;
-        }
-        return false;
-    });
-
-    if(tieneReservaActiva) {
-        alert('¡Ya tienes una reserva activa para hoy o días futuros!');
-        document.getElementById('reserva-modal').style.display = 'none';
-        return;
-    }
+    showLoader("Procesando tu reserva..."); // Mensaje específico para reservas
+    const submitBtn = document.querySelector('#reserva-form button[type="submit"]');
+    submitBtn.disabled = true;
     
     try {
-        const formData = new URLSearchParams();
-        formData.append("nombre", reserva.nombre);
-        formData.append("telefono", reserva.telefono);
-        formData.append("barbero", reserva.barbero);
-        formData.append("fecha", reserva.fecha);
-        formData.append("hora", reserva.hora);
+        const barberoSelect = document.getElementById('barber-select');
+        const barberoNombre = barberoSelect.options[barberoSelect.selectedIndex].text;
 
-        await fetch(API_URL, {
-        method: 'POST',
-        body: formData
+        const reserva = {
+            fecha: document.getElementById('selected-date').value,
+            hora: document.getElementById('selected-time').value,
+            nombre: document.getElementById('client-name').value,
+            telefono: document.getElementById('client-phone').value,
+            barbero: barberoNombre
+        };
+
+        // Verificación de reservas existentes...
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        const tieneReservaActiva = globalReservas.some(r => {
+            if (r.telefono === reserva.telefono) {
+                const partesFecha = r.fecha.split(' de ');
+                const meses = {
+                    'enero': 0, 'febrero': 1, 'marzo': 2, 'abril': 3, 'mayo': 4, 'junio': 5,
+                    'julio': 6, 'agosto': 7, 'septiembre': 8, 'octubre': 9, 'noviembre': 10, 'diciembre': 11
+                };
+
+                const dia = parseInt(partesFecha[0]);
+                const mes = meses[partesFecha[1].toLowerCase()];
+                const año = hoy.getFullYear(); 
+
+                const fechaReserva = new Date(año, mes, dia);
+                return fechaReserva >= hoy;
+            }
+            return false;
         });
 
-        
+        if (tieneReservaActiva) {
+            alert('¡Ya tienes una reserva activa para hoy o días futuros!');
+            document.getElementById('reserva-modal').style.display = 'none';
+            return;
+        }
+
+        const params = new URLSearchParams(reserva).toString();
+        const response = await fetch(`${API_URL}?${params}`);
         const result = await response.json();
 
         if (result.ok) {
+            showLoader("Actualizando datos..."); // Mensaje adicional mientras se actualizan los datos
+            await loadAllData();
+            
             alert('¡Reserva confirmada!');
             document.getElementById('reserva-modal').style.display = 'none';
-
-            await loadAllData(); // Actualiza los datos
 
             const activeDay = document.querySelector('.day-card.active');
             const dayIndex = Array.from(document.querySelectorAll('.day-card')).indexOf(activeDay);
@@ -320,6 +349,9 @@ document.getElementById('reserva-form').addEventListener('submit', async (e) => 
     } catch (error) {
         console.error('Error:', error);
         alert('Hubo un error al guardar la reserva. Por favor intenta nuevamente.');
+    } finally {
+        hideLoader();
+        submitBtn.disabled = false;
     }
 });
 
