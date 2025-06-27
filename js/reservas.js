@@ -1,5 +1,10 @@
 // URL base de tu Google Apps Script
-const API_URL = 'https://script.google.com/macros/s/AKfycbx27HHcEslFB4n6ezY3mhGl8PjPMI1NuLH5GgM3bPGrFKozTSKHvHJ2ebXFHiumDde7/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxOeidV_Y_LQsziRr8BctsOldKMLhcPJtPszacGCQ8tA8_l0wYadeKTeznb9faPh2e8/exec';
+
+// Variables globales para almacenar los datos
+let globalReservas = [];
+let globalBarberos = [];
+let isDataLoaded = false;
 
 // Horarios disponibles
 const horarios = [
@@ -22,36 +27,27 @@ function openWhatsApp(number) {
     window.open(`https://wa.me/${number}`, '_blank');
 }
 
-// Función para obtener reservas desde Google Sheets
-async function getReservasFromSheet() {
+// Función para cargar todos los datos al iniciar
+async function loadAllData() {
     try {
-        const response = await fetch(`${API_URL}?action=reservas`);
-        if (!response.ok) throw new Error('Error al obtener reservas');
+        const response = await fetch(`${API_URL}?action=getAllData`);
+        if (!response.ok) throw new Error('Error al obtener datos');
         
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
-    } catch (error) {
-        console.error('Error obteniendo reservas:', error);
-        return [];
-    }
-}
-
-// Función para obtener barberos activos desde Google Sheets
-async function getBarberosActivos() {
-    try {
-        const response = await fetch(`${API_URL}?action=barberos`);
-        if (!response.ok) throw new Error('Error al obtener barberos');
+        globalReservas = Array.isArray(data.reservas) ? data.reservas : [];
+        globalBarberos = Array.isArray(data.barberos) ? data.barberos : [];
+        isDataLoaded = true;
         
-        const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        // Inicializar la UI una vez que los datos están cargados
+        generateDaysRow();
     } catch (error) {
-        console.error('Error obteniendo barberos:', error);
-        return [];
+        console.error('Error cargando datos:', error);
+        // Mostrar algún mensaje de error al usuario
     }
 }
 
 // Función para generar los días en la fila
-async function generateDaysRow() {
+function generateDaysRow() {
     const daysRow = document.querySelector('.days-row');
     const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     
@@ -85,7 +81,9 @@ async function generateDaysRow() {
 }
 
 // Función para actualizar el contenido del día seleccionado
-async function updateDayContent(date, dayIndex) {
+function updateDayContent(date, dayIndex) {
+    if (!isDataLoaded) return;
+    
     const dayContentContainer = document.querySelector('.day-content-container');
     const formattedDate = formatDate(date);
     
@@ -94,21 +92,18 @@ async function updateDayContent(date, dayIndex) {
         <div class="day-slots-container" id="day-${dayIndex}-slots"></div>
     `;
     
-    await generateTimeSlotsForDay(date, dayIndex);
+    generateTimeSlotsForDay(date, dayIndex);
 }
 
 // Función para generar los slots de tiempo para un día específico
-async function generateTimeSlotsForDay(date, dayIndex) {
+function generateTimeSlotsForDay(date, dayIndex) {
+    if (!isDataLoaded) return;
+    
     const container = document.getElementById(`day-${dayIndex}-slots`);
     if (!container) return;
     
     const currentDate = formatDate(date);
-    const [reservas, barberos] = await Promise.all([
-        getReservasFromSheet(),
-        getBarberosActivos()
-    ]);
-    
-    const reservasDelDia = Array.isArray(reservas) ? reservas.filter(r => r.fecha === currentDate) : [];
+    const reservasDelDia = globalReservas.filter(r => r.fecha === currentDate);
     
     container.innerHTML = '';
     
@@ -130,7 +125,7 @@ async function generateTimeSlotsForDay(date, dayIndex) {
         if (reservasEnEsteHorario.length > 0) {
             const counter = document.createElement('div');
             counter.className = 'reservations-counter';
-            counter.textContent = `${reservasEnEsteHorario.length}/${barberos.length}`;
+            counter.textContent = `${reservasEnEsteHorario.length}/${globalBarberos.length}`;
             topContainer.appendChild(counter);
         }
         
@@ -180,12 +175,12 @@ async function generateTimeSlotsForDay(date, dayIndex) {
         
         slot.appendChild(reservationsContainer);
         
-        const barberosDisponibles = barberos.filter(b => !barberosOcupados.includes(b.nombre));
+        const barberosDisponibles = globalBarberos.filter(b => !barberosOcupados.includes(b.nombre));
         if (barberosDisponibles.length > 0) {
             const reserveBtn = document.createElement('button');
             reserveBtn.className = 'btn btn-outline';
             reserveBtn.textContent = 'Reservar';
-            reserveBtn.onclick = () => openReservaModal(time, currentDate, barberosOcupados, barberos);
+            reserveBtn.onclick = () => openReservaModal(time, currentDate, barberosOcupados);
             slot.appendChild(reserveBtn);
             slot.classList.add('available');
         } else {
@@ -213,19 +208,7 @@ async function generateTimeSlotsForDay(date, dayIndex) {
 }
 
 // Función para abrir modal de reserva
-async function openReservaModal(time, date, barberosOcupados = [], barberos) {
-    // Si no se proporcionan barberos ocupados, los obtenemos
-    if (barberosOcupados.length === 0) {
-        const reservasDelDia = await getReservasDelDia(date);
-        const reservasEnEsteHorario = reservasDelDia.filter(r => r.hora === time);
-        barberosOcupados = reservasEnEsteHorario.map(r => r.barbero);
-    }
-    
-    // Si no tenemos los barberos, los obtenemos
-    if (!barberos) {
-        barberos = await getBarberosActivos();
-    }
-    
+function openReservaModal(time, date, barberosOcupados = []) {
     document.getElementById('selected-time').value = time;
     document.getElementById('selected-date').value = date;
     
@@ -233,7 +216,7 @@ async function openReservaModal(time, date, barberosOcupados = [], barberos) {
     const select = document.getElementById('barber-select');
     select.innerHTML = '';
     
-    barberos.forEach(barbero => {
+    globalBarberos.forEach(barbero => {
         if (!barberosOcupados.includes(barbero.nombre)) {
             const option = document.createElement('option');
             option.value = barbero.id || barbero.nombre; // Usar ID o nombre si no hay ID
@@ -253,10 +236,9 @@ async function openReservaModal(time, date, barberosOcupados = [], barberos) {
     document.getElementById('reserva-modal').style.display = 'flex';
 }
 
-// Función para obtener reservas de un día específico
-async function getReservasDelDia(fecha) {
-    const reservas = await getReservasFromSheet();
-    return reservas.filter(r => r.fecha === fecha);
+// Función para obtener reservas de un día específico (ahora usa los datos globales)
+function getReservasDelDia(fecha) {
+    return globalReservas.filter(r => r.fecha === fecha);
 }
 
 // Guardar reserva en Google Sheets
@@ -273,14 +255,12 @@ document.getElementById('reserva-form').addEventListener('submit', async (e) => 
         telefono: document.getElementById('client-phone').value,
         barbero: barberoNombre
     };
-
-    const reservasList = await getReservasFromSheet();
     
     // Verificar solo reservas futuras o de hoy
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0); // Normalizar a inicio del día
     
-    const tieneReservaActiva = reservasList.some(r => {
+    const tieneReservaActiva = globalReservas.some(r => {
         if (r.telefono === reserva.telefono) {
             // Convertir fecha de reserva a objeto Date
             const partesFecha = r.fecha.split(' de ');
@@ -321,12 +301,16 @@ document.getElementById('reserva-form').addEventListener('submit', async (e) => 
             if (result.ok) {
                 alert('¡Reserva confirmada!');
                 document.getElementById('reserva-modal').style.display = 'none';
+                
+                // Actualizar los datos globales después de una nueva reserva
+                await loadAllData();
+                
                 // Actualizar la vista con los nuevos datos
                 const activeDay = document.querySelector('.day-card.active');
                 const dayIndex = Array.from(document.querySelectorAll('.day-card')).indexOf(activeDay);
                 const date = new Date();
                 date.setDate(date.getDate() + dayIndex);
-                await updateDayContent(date, dayIndex);
+                updateDayContent(date, dayIndex);
             } else {
                 throw new Error(result.error || 'Error al guardar la reserva');
             }
@@ -346,5 +330,5 @@ document.querySelector('.close-modal').addEventListener('click', () => {
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
-    generateDaysRow();
+    loadAllData(); // Cargar todos los datos al iniciar
 });
